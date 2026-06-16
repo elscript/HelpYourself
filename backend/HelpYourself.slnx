@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HelpYourself.Api/HelpYourself.Api.csproj" />
+    <Project Path="src/HelpYourself.Core/HelpYourself.Core.csproj" />
+    <Project Path="src/HelpYourself.Infrastructure/HelpYourself.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HelpYourself.Tests/HelpYourself.Tests.csproj" />
+  </Folder>
+</Solution>
