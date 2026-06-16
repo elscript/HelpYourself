@@ -27,7 +27,7 @@ public static class ServiceRegistration
         {
             var opts = configuration.GetSection(LlmOptions.Section).Get<LlmOptions>() ?? new();
             client.BaseAddress = new Uri(opts.BaseUrl);
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = TimeSpan.FromMinutes(2);
         });
 
         services.AddScoped<IRitualRepository, RitualRepository>();
