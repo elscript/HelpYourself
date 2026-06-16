@@ -20,6 +20,7 @@ class RitualScreen extends StatefulWidget {
 class _RitualScreenState extends State<RitualScreen> {
   Ritual? _ritual;
   bool _loading = true;
+  String? _error;
   final _api = RitualApiClient();
 
   int _currentPhaseIndex = 0;
@@ -42,13 +43,18 @@ class _RitualScreenState extends State<RitualScreen> {
   Future<void> _loadRitual() async {
     try {
       final ritual = await _api.generateRitual(widget.archetype);
+      if (!mounted) return;
       setState(() {
         _ritual = ritual;
         _loading = false;
       });
       _startPhase();
     } catch (e) {
-      if (mounted) setState(() => _loading = false);
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
     }
   }
 
@@ -114,7 +120,11 @@ class _RitualScreenState extends State<RitualScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const _LoadingScreen();
-    if (_ritual == null) return const _LoadingScreen(); // still loading
+    if (_error != null) return _ErrorScreen(error: _error!, onRetry: () {
+      setState(() { _loading = true; _error = null; });
+      _loadRitual();
+    });
+    if (_ritual == null) return const _LoadingScreen();
 
     final phase = _ritual!.phases[_currentPhaseIndex];
     final instruction = phase.instructions[_currentInstructionIndex];
@@ -345,6 +355,72 @@ class _FeedbackButton extends StatelessWidget {
               style: const TextStyle(fontSize: 11, color: AppColors.onSurfaceMuted),
               textAlign: TextAlign.center),
         ],
+      ),
+    );
+  }
+}
+
+class _ErrorScreen extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+  const _ErrorScreen({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('😔', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 24),
+              const Text(
+                'Не удалось подключиться к серверу',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.onBackground,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                error,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 12, color: AppColors.onSurfaceMuted),
+              ),
+              const SizedBox(height: 32),
+              GestureDetector(
+                onTap: onRetry,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'Попробовать снова',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.onPrimary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: const Text(
+                  'Назад',
+                  style: TextStyle(fontSize: 14, color: AppColors.onSurfaceMuted),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
