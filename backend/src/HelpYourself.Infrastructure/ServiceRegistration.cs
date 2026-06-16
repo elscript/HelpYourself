@@ -23,7 +23,7 @@ public static class ServiceRegistration
             ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis")!));
 
         services.Configure<LlmOptions>(configuration.GetSection(LlmOptions.Section));
-        services.AddHttpClient<ILlmClient, LlmClient>((sp, client) =>
+        services.AddHttpClient<ILlmClient, LlmClient>(client =>
         {
             var opts = configuration.GetSection(LlmOptions.Section).Get<LlmOptions>() ?? new();
             client.BaseAddress = new Uri(opts.BaseUrl);

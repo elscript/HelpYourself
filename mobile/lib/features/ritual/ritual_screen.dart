@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/api/ritual_api_client.dart';
 import '../../core/enums/archetype.dart';
 import '../../core/enums/feedback_rating.dart';
 import '../../core/models/ritual.dart';
@@ -19,6 +20,7 @@ class RitualScreen extends StatefulWidget {
 class _RitualScreenState extends State<RitualScreen> {
   Ritual? _ritual;
   bool _loading = true;
+  final _api = RitualApiClient();
 
   int _currentPhaseIndex = 0;
   int _currentInstructionIndex = 0;
@@ -38,10 +40,16 @@ class _RitualScreenState extends State<RitualScreen> {
   }
 
   Future<void> _loadRitual() async {
-    // TODO: inject RitualRepository / API client via Riverpod
-    await Future.delayed(const Duration(milliseconds: 1500));
-    // Placeholder until API integration
-    setState(() => _loading = false);
+    try {
+      final ritual = await _api.generateRitual(widget.archetype);
+      setState(() {
+        _ritual = ritual;
+        _loading = false;
+      });
+      _startPhase();
+    } catch (e) {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
   void _startPhase() {
@@ -96,7 +104,9 @@ class _RitualScreenState extends State<RitualScreen> {
   }
 
   void _onFeedback(FeedbackRating rating) {
-    // TODO: send feedback to API
+    if (_ritual != null) {
+      _api.sendFeedback(_ritual!.ritualId, rating).ignore();
+    }
     context.pop();
     context.pop();
   }
