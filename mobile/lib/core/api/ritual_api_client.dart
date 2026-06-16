@@ -22,7 +22,7 @@ class RitualApiClient {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode(body),
         )
-        .timeout(const Duration(seconds: 15));
+        .timeout(const Duration(minutes: 2));
 
     if (response.statusCode != 200) {
       throw ApiException(response.statusCode, response.body);
